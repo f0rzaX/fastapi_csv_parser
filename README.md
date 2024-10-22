@@ -41,6 +41,7 @@ This will start three containers:
 
 #### Step 2: Verify the Setup
 
+-   Wait 20-30 seconds for the application to start.
 -   Access the FastAPI application at: [http://localhost:8000](http://localhost:8000).
 -   If everything is working, you should see the FastAPI interface.
 -   Use the `/` endpoint to load the form page for uploading CSV files.
