@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+    mysql:
+        image: mysql:latest
+        container_name: vani-mysql
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: rootpassword
+            MYSQL_DATABASE: test_db
+            MYSQL_USER: user
+            MYSQL_PASSWORD: password
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    fastapi_app:
+        build: .
+        container_name: fastapi_app
+        restart: always
+        depends_on:
+            - mysql
+            - redis
+        command: >
+            sh -c "sleep 20 && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+        environment:
+            DB_HOST: vani-mysql
+            DB_PORT: 3306
+            DB_USER: user
+            DB_PASSWORD: password
+            DB_NAME: test_db
+            REDIS_URL: redis://vani-redis:6379/0
+        volumes:
+            - ./storage:/app/storage
+        ports:
+            - "8000:8000"
+
+    redis:
+        image: redis
+        container_name: vani-redis
+        restart: always
+        ports:
+            - "6379:6379"
+
+    celery_worker:
+        build: .
+        container_name: celery_worker
+        restart: always
+        command: celery -A celery_worker worker --loglevel=info
+        depends_on:
+            - redis
+            - mysql
+        environment:
+            DB_HOST: vani-mysql
+            DB_PORT: 3306
+            DB_USER: user
+            DB_PASSWORD: password
+            DB_NAME: test_db
+            REDIS_URL: redis://vani-redis:6379/0
+        volumes:
+            - ./storage:/app/storage
+
+volumes:
+    mysql_data:

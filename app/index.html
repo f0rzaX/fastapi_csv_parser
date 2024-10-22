@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV File Upload</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .upload-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #0056b3;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h2>CSV File Upload</h2>
+        <input type="text" id="fileName" placeholder="No file chosen" readonly>
+        <label class="custom-file-upload">
+            <input type="file" id="fileInput" accept=".csv">
+            Browse
+        </label>
+        <button id="uploadButton" onclick="uploadFile()">Upload</button>
+        <div class="error" id="errorMessage"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileNameField = document.getElementById('fileName');
+        const uploadButton = document.getElementById('uploadButton');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Show the file name when a file is selected
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+
+            if (file) {
+                if (file.type === 'text/csv') {
+                    fileNameField.value = file.name;
+                    uploadButton.style.display = 'inline-block';
+                    errorMessage.textContent = '';
+                } else {
+                    fileNameField.value = '';
+                    uploadButton.style.display = 'none';
+                    errorMessage.textContent = 'Please select a .csv file.';
+                }
+            } else {
+                fileNameField.value = '';
+                uploadButton.style.display = 'none';
+            }
+        });
+
+        // Function to upload the file
+        function uploadFile() {
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/uploadFile', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('File uploaded successfully');
+                    fileNameField.value = '';
+                    uploadButton.style.display = 'none';
+                } else {
+                    errorMessage.textContent = 'File upload failed. Try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = 'Error uploading file.';
+            });
+        }
+    </script>
+</body>
+</html>
